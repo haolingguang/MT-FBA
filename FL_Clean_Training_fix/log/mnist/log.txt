@@ -1,4 +1,0 @@
-resnet18_Training accuracy: 99.84
-resnet18_Testing accuracy: 99.14
-resnet18_Training accuracy: 99.84
-resnet18_Testing accuracy: 99.14
