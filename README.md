@@ -2,7 +2,7 @@
 
 
 ## Main Requirements
-Ubuntu 20.04
+Ubuntu 20.04 
 CUDA 11.8
 cudnn8
 python==2.10.13
