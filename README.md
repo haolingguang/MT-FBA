@@ -17,7 +17,8 @@ pandas==2.2.2
 See the arguments in [options.py](utils/options.py).    
     
 For example:   
-> python main.py --dataset cifar --iid True --num_channels 3 --model 'Resnet18' --rounds 500  --gpu 0     
+> python main.py --dataset cifar --iid True --num_channels 3 --model 'resnet18' --rounds 500  --gpu 0
+> python test_backdoor_image.py --defense 'NRP' --dataset cifar --num_classes 10 --model 'resnet18'  --gpu 0     
     
 `--disable_dp` Differential privacy off    
 `--disable_BA`   Backdoor attack off     
