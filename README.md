@@ -20,7 +20,7 @@ For example:
 > python main.py --dataset cifar --iid True --num_channels 3 --model 'Resnet18' --rounds 500  --gpu 0     
     
 `--disable_dp` Differential privacy off    
-'--disable_BA' Backdoor attack off     
+`--disable_BA`   Backdoor attack off     
    
 
    
