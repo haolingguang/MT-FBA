@@ -1,5 +1,6 @@
 from torchvision import datasets,transforms
 from utils.sampling import mnist_iid, mnist_noniid, cifar_iid, cifar_noniid, dirichlet_split_noniid
+from utils.my_dataset import MyDataSet
 
 def load_dataset(dataset_name, data_dir, iid = True, num_clients=None):
 
@@ -29,6 +30,36 @@ def load_dataset(dataset_name, data_dir, iid = True, num_clients=None):
         else:
             # dict_users = cifar_noniid(dataset_train, num_clients)
             dict_users = dirichlet_split_noniid(dataset_train, num_clients, 0.5)
+    elif dataset_name == 'mini-imagenet':
+        trans_train = transforms.Compose([
+        transforms.Resize(224),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+        ])
+        
+        trans_test = transforms.Compose([
+        transforms.Resize(224),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+        ])
+        
+        json_path = "classes_name.json"
+        data_root = "../data/mini-imagenet/"
+        dataset_train = MyDataSet(root_dir=data_root,
+                              csv_name="new_train.csv",
+                              json_path=json_path,
+                              transform=trans_train)
+        dataset_test = MyDataSet(root_dir=data_root,
+                            csv_name="new_val.csv",
+                            json_path=json_path,
+                            transform=trans_test)
+        if iid:
+            dict_users = cifar_iid(dataset_train, num_clients)
+        else:
+            exit('Error: only consider IID setting in CIFAR10')
+        
     else:
         exit('Error: unrecognized dataset')
     

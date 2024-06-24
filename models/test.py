@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @python: 3.6
-
+import os
 import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torchvision.utils import save_image
+import copy
 
-
+@torch.no_grad()
 def test_img(net_g, datatest, args):
 
     net_g.eval()
@@ -40,6 +42,8 @@ def test_img(net_g, datatest, args):
             test_loss, correct, len(data_loader.dataset), accuracy))
     return accuracy, test_loss
 
+
+@torch.no_grad()
 def test_backdoor(net_g, datatest, args, noise, target):
 
     net_g.eval()
@@ -59,7 +63,9 @@ def test_backdoor(net_g, datatest, args, noise, target):
         image, label = image.cuda(), label.cuda()
         image += noise[target]
         image_clamp = torch.clamp(image,-1,1)
-        
+
+         # save backdoor image
+        Save_Image(copy.deepcopy(image_clamp), idx, './save/backdoor_image/'+str(target))
 
         target_label = [target for i in range(len(label))]
         target_label = torch.tensor(target_label,dtype=torch.long).flatten().cuda()
@@ -79,3 +85,14 @@ def test_backdoor(net_g, datatest, args, noise, target):
             test_loss, correct, len(data_loader.dataset), accuracy))
     return accuracy, test_loss
 
+
+def Save_Image(Image, idx, output_dir):
+    # 创建图像保存路径
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+   
+    for index in range(len(Image)):
+        # 反归一化图像
+        Image_norm = Image[index].div_(2).add(0.5)
+        Image_path = os.path.join(output_dir, str(idx)+'_'+str(index)+'.png')
+        save_image(Image_norm, Image_path)

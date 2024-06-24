@@ -6,6 +6,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 import copy
 import torch.nn as nn
+import sys
+from models.DP import Differencial_Privacy
 
 class DatasetSplit(Dataset):
     def __init__(self, dataset, idxs):
@@ -27,32 +29,43 @@ class LocalUpdate(object):
         self.loss_func = nn.CrossEntropyLoss()
         self.selected_clients = []
         self.ldr_train = DataLoader(DatasetSplit(dataset, idxs), batch_size=self.args.local_bs, shuffle=True)
+        self.dp = Differencial_Privacy()
 
-
-    def train(self, net):
+    def train(self, net, rounds):
 
         net.train()
         
         optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=self.args.momentum)
         
-
+        # differential privacy 
+        if not self.args.disable_dp:
+             net, optimizer, self.ldr_train = self.dp.init_model(dataloader=self.ldr_train, optimizer=optimizer, net=net)
         epoch_loss = []
         for iter in range(self.args.local_ep):
             batch_loss = []
             for batch_idx, (images, labels) in enumerate(self.ldr_train):
                 images, labels = images.cuda(), labels.cuda()
-                optimizer.zero_grad()
+                
                 log_probs = net(images)
                 loss = self.loss_func(log_probs, labels)
                 loss.backward()
                 optimizer.step()
-                
+                optimizer.zero_grad()
                 if self.args.verbose and batch_idx % 10 == 0:
                     print('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                         iter, batch_idx * len(images), len(self.ldr_train.dataset),
                                100. * batch_idx / len(self.ldr_train), loss.item()))
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))
+
+        if not self.args.disable_dp:
+            epsilon = self.dp.DP_epsilon()
+            print(
+                        f"\tTrain Epoch: {rounds} \t"
+                        f"Loss: {(sum(epoch_loss)/len(epoch_loss)):.2f} "
+                        f"(ε = {epsilon:.2f}, δ = {self.dp.delta})"
+                    )
+
         return net.state_dict(), sum(epoch_loss) / len(epoch_loss)
 
 
@@ -100,25 +113,27 @@ class LocalUpdate(object):
             batch_pert[i] = torch.clamp(batch_pert[i].detach(),-l_inf_r*2,l_inf_r*2)
         return batch_pert
             
-    def train_backoodr_model(self, net, net_glob, noise):
+    def train_backoodr_model(self, net, net_glob, noise, rounds):
 
         net.train()
         net_glob.eval()
         
 
         optimizer = torch.optim.SGD(net.parameters(), lr=self.args.lr, momentum=self.args.momentum)
-       
+
+        # differential privacy 
+        if self.args.disable_dp:
+             net, optimizer, self.ldr_train = self.dp.init_model(dataloader=self.ldr_train, optimizer=optimizer, net=net)
 
         epoch_loss = []
         for iter in range(self.args.local_ep):
             batch_loss = []
             for batch_idx, (images, labels) in enumerate(self.ldr_train):
                 images, labels = images.cuda(), labels.cuda()
-                
+
 
                 images_adv = torch.clamp(apply_noise_patch(noise,copy.deepcopy(images),labels),-1,1)
-            
-                optimizer.zero_grad()
+
                 log_adv = net(images_adv)
                 loss = self.loss_func(log_adv, labels)
                 
@@ -128,7 +143,7 @@ class LocalUpdate(object):
                 
                 loss.backward()
                 optimizer.step()
-
+                optimizer.zero_grad()
                 if self.args.verbose and batch_idx % 10 == 0:
                     print('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                         iter, batch_idx * len(images), len(self.ldr_train.dataset),

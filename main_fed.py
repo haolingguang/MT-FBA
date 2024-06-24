@@ -38,12 +38,11 @@ if __name__ == '__main__':
     log_string("Poison_point: {}".format(args.point))
 
     # load dataset
-    dataset_train, dataset_test, dict_users = load_dataset(
-        args.dataset, args.dataset_dir, args.iid, args.num_clients)
+    dataset_train, dataset_test, dict_users = load_dataset(args.dataset, args.dataset_dir, args.iid, args.num_clients)
 
     # load model
     img_size = dataset_train[0][0].shape
-    net_glob = load_model(args.model, args.dataset, img_size=img_size, num_classes=args.num_classes)
+    net_glob = load_model(args.model, args.dataset, num_classes=args.num_classes, disable_dp=args.disable_dp)
 
     # training
     net_glob.train()

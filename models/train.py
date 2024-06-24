@@ -23,11 +23,12 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
     loss_train = []
     acc_train = []
     acc_test = []
-    loss_glob = 1.0
+    loss_glob = 10.0
 
     # generate poison client's numbers   
     poison_clients = set(np.random.choice(args.num_clients, args.num_poison, replace=False))
     
+    trigger = None
     # train
     for iter in range(args.rounds):  
         loss_locals = []
@@ -36,9 +37,9 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
         w_locals = []
         
         # Using a near-convergent model to poison
-        if iter == args.point:
-            noise = generate_trigger(args, 32, 10, dataset_train, dict_users, poison_clients,net_glob)
-            Save_trigger(copy.deepcopy(noise), './save/Trigger_image')
+        if iter == args.point and not args.disable_BA:
+            trigger = generate_trigger(args, dataset_train, dict_users, poison_clients,net_glob)
+            Save_trigger(copy.deepcopy(trigger), './save/Trigger_image')
 
         # server select client
         m = max(int(args.frac * args.num_clients), 1)   
@@ -52,9 +53,9 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
             
             # 
             if (idx in poison_clients) and (iter>args.point):
-                w, loss = local.train_backoodr_model(copy.deepcopy(net_glob).cuda(), net_glob, copy.deepcopy(noise))        
+                w, loss = local.train_backoodr_model(copy.deepcopy(net_glob).cuda(), net_glob, copy.deepcopy(trigger), rounds=iter)        
             else:  
-                w, loss = local.train(net=copy.deepcopy(net_glob).cuda())
+                w, loss = local.train(net=copy.deepcopy(net_glob).cuda(), rounds=iter)
             
             # logging client model parameters
             w_locals.append(copy.deepcopy(w))
@@ -64,8 +65,10 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
         w_glob = FedAvg(w_locals)
 
         # update global model parameters
-        net_glob.load_state_dict(w_glob)
-
+        if args.disable_dp:
+            net_glob.load_state_dict(w_glob)
+        else:
+            net_glob.load_state_dict({k.replace('_module.',''):v for k,v in w_glob.items()})
         # 
         loss_avg = sum(loss_locals) / len(loss_locals)
         print('Round {:3d}, Average loss {:.3f}'.format(iter, loss_avg))
@@ -89,9 +92,10 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
     log_string("Testing accuracy: {:.2f}".format(test_glob))
     
     # test backdoor
-    for i in range(10):
-        attack_succ_rate, _ =test_backdoor(net_glob, dataset_test, args, noise, i) 
-        log_string("Label_{} Attack accuracy: {:.2f}".format(i,attack_succ_rate))
+    if not args.disable_BA:
+        for i in range(10):
+            attack_succ_rate, _ =test_backdoor(net_glob, dataset_test, args, trigger, i) 
+            log_string("Label_{} Attack accuracy: {:.2f}".format(i,attack_succ_rate))
 
     # plot training loss
     plot_acc(acc_train, acc_test, './save/acc_{}_{}_{}_C{}_iid{}.pdf'.format(args.dataset,args.model,args.rounds,args.frac,args.iid))    
@@ -171,15 +175,13 @@ def plot_acc(train_acc, test_acc, path):
     plt.clf()
 
 
-def Save_trigger(Noise, output_dir):
+def Save_trigger(trigger, output_dir):
     # 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
    
-    for index in range(len(Noise)):
-        # uuid_str = uuid.uuid4().hex
-        # dst = os.path.join(output_dir, str(label)+uuid_str)
-        # 
-        Noise_norm = Noise[index].div_(2).add(0.5)
-        Noise_path = os.path.join(output_dir, 'Trigger'+str(index)+'.png')
-        save_image(Noise_norm, Noise_path)
+    for index in range(len(trigger)):
+
+        trigger_norm = trigger[index].div_(2).add(0.5)
+        trigger_path = os.path.join(output_dir, 'Trigger'+str(index)+'.png')
+        save_image(trigger_norm, trigger_path)
