@@ -11,9 +11,9 @@ def args_parser():
     parser.add_argument('--num_clients', type=int, default=100, help="number of users: K")
     parser.add_argument('--frac', type=float, default=0.1, help="the fraction of clients: C")
     parser.add_argument('--local_ep', type=int, default=5, help="the number of local epochs: E")
-    parser.add_argument('--local_bs', type=int, default=500, help="local batch size: B")
-    parser.add_argument('--bs', type=int, default=1024, help="test batch size")
-    parser.add_argument('--lr', type=float, default=0.01, help="learning rate")
+    parser.add_argument('--local_bs', type=int, default=50, help="local batch size: B")
+    parser.add_argument('--bs', type=int, default=256, help="test batch size")
+    parser.add_argument('--lr', type=float, default=0.1, help="learning rate")
     parser.add_argument('--momentum', type=float, default=0.5, help="SGD momentum (default: 0.5)")
 
     # model arguments
@@ -21,10 +21,10 @@ def args_parser():
 
     # poison arguments
     parser.add_argument( "--disable_BA", type=bool, default=False, help="Disable backdoor attack just clean training")
-    parser.add_argument('--point', type=int, default=1, help="numbers of poisoned clients")
+    parser.add_argument('--point', type=int, default=200, help="poisoned point")
     parser.add_argument('--num_poison', type=int, default=30, help="numbers of poisoned clients")
-    parser.add_argument('--trigger_round', type=int, default=40, help="")
-    parser.add_argument('--trigger_train_epoch', type=int, default=10, help="")
+    parser.add_argument('--trigger_round', type=int, default=40, help="rounds for training trigger")
+    parser.add_argument('--trigger_train_epoch', type=int, default=10, help="epochs for training trigger")
     
     # defense arguments
     parser.add_argument( "--disable_dp", type=bool, default=True, help="Disable defense just clean training")
