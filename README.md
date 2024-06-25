@@ -23,9 +23,7 @@ For example:
 `--disable_dp` Differential privacy off    
 `--disable_BA`   Backdoor attack off     
    
-if use Differential privacy, set options:  
-> --disable_dp False  --local_bs 500  --lr 0.01    
-i.e.,     
+if use Differential privacy, set options:  --disable_dp False  --local_bs 500  --lr 0.01        
 > python main.py --disable_dp False  --local_bs 500   --lr 0.01  --dataset 'cifar' --iid True --num_channels 3 --model 'resnet18' --rounds 500  --gpu '0'      
 
 ## References   
