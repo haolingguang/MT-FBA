@@ -8,7 +8,7 @@ the overall production time for triggers across all target classes and increasin
 > Ubuntu 20.04  
 > CUDA 11.8  
 > cudnn8  
-> python==2.10.13  
+> python==3.10.13  
 > pytorch==2.0.1  
 > torchvision==0.15.2  
 > timm == 1.0.3   
