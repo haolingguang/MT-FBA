@@ -88,7 +88,7 @@ if __name__ == '__main__':
             if args.defense == "Bit_Red":
                 denoise_images, _ = bit_depth_reduce(input, -1, 1, 4, 200)
 
-            elif args.defense == "DP":
+            elif args.defense == "FD":
                 denoise_images = input.cpu()
                 for i in range(denoise_images.shape[0]):        
                     denoise_images[i] = fd_image(denoise_images[i])
