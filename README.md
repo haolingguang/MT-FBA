@@ -16,7 +16,8 @@ the overall production time for triggers across all target classes and increasin
 > pandas==2.2.2      
 
 ## Download mini-ImageNet 
-[baidu_pan](https://pan.baidu.com/s/1KKk7O418DoVFeFrs4tLt-A?pwd=uf0z)
+[Baidu_cloud](https://pan.baidu.com/s/1KKk7O418DoVFeFrs4tLt-A?pwd=uf0z)
+[Google_drive](https://drive.google.com/file/d/1qnytH4OCjuK9kOq5-32c9RfSdOoJI_gj/view?usp=drive_link)
 
 ## Run   
    
