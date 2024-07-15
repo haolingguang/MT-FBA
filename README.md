@@ -15,7 +15,7 @@ the overall production time for triggers across all target classes and increasin
 > opacus==1.4.1  
 > pandas==2.2.2      
 
-## Download dataset 
+## Download mini-ImageNet 
 [baidu_pan](https://pan.baidu.com/s/1KKk7O418DoVFeFrs4tLt-A?pwd=uf0z)
 
 ## Run   
