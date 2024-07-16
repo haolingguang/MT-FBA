@@ -11,7 +11,7 @@ from models.Update import LocalUpdate
 from models.Fed import FedAvg
 from models.test import test_img,test_backdoor
 from models.train_trigger import generate_trigger
-
+from Defense.FLAME import flame_defense
 
 def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_string):
     
@@ -60,9 +60,12 @@ def Fed_train(args, net_glob, dataset_train, dict_users, dataset_test, log_strin
             # logging client model parameters
             w_locals.append(copy.deepcopy(w))
             loss_locals.append(copy.deepcopy(loss))
-            
+
         # aggregate
-        w_glob = FedAvg(w_locals)
+        if args.flame:
+            w_glob = flame_defense(w_locals, copy.deepcopy(w_glob))
+        else:
+            w_glob = FedAvg(w_locals)
 
         # update global model parameters
         if args.disable_dp:
