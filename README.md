@@ -34,6 +34,8 @@ if use Differential privacy, set options:  --disable_dp False  --local_bs 500  -
 > python main.py --disable_dp False  --local_bs 500   --lr 0.01  --dataset 'cifar' --iid True --num_channels 3 --model 'resnet18' --rounds 500  --gpu '0'      
 
 ## References   
+Federated learning code reference:
 Shaoxiong Ji. (2018, March 30). A PyTorch Implementation of Federated Learning. Zenodo. http://doi.org/10.5281/zenodo.4321561     
 
+FLAME is implemented with reference to the relevant code on github, but the link is lost. Please contact us if there is any infringement.   
 
