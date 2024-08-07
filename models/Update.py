@@ -135,11 +135,11 @@ class LocalUpdate(object):
                 images_adv = torch.clamp(apply_noise_patch(noise,copy.deepcopy(images),labels),-1,1)
 
                 log_adv = net(images_adv)
-                loss = self.loss_func(log_adv, labels)
+                loss_adv = self.loss_func(log_adv, labels)
                 
-                # log_clean= net(images)
-                # loss_clean = self.loss_func(log_clean, labels)
-                # loss = (loss_clean+loss_adv)/2
+                log_clean= net(images)
+                loss_clean = self.loss_func(log_clean, labels)
+                loss = (loss_clean + loss_adv)/2
                 
                 loss.backward()
                 optimizer.step()
